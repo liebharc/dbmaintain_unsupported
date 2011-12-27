@@ -2,5 +2,6 @@ This is a fork of dbmaintain (http://www.dbmaintain.org/overview.html) with some
 - https://unitils.atlassian.net/browse/DBM-100
 - https://unitils.atlassian.net/browse/DBM-101
 - https://unitils.atlassian.net/browse/DBM-122
+- https://unitils.atlassian.net/browse/DBM-123
 
 It's neither supported by the dbmaintain team nor by me, but feel free to use it. If you find the features/fixes useful then I'd ask you to vote for the JIRA tickets, so that they might be implemented in future versions of DBMaintain.
