@@ -82,7 +82,6 @@ public class DefaultDBClearer implements DBClearer {
         this.itemsToPurge = itemsToPurge;
         this.constraintsDisabler = constraintsDisabler;
         this.executedScriptInfoSource = executedScriptInfoSource;
-        assertItemsToPreserve(itemsToPreserve);
     }
 
 
@@ -92,6 +91,8 @@ public class DefaultDBClearer implements DBClearer {
      * untouched.
      */
     public void clearDatabase() {
+    	assertItemsToPreserve(itemsToPreserve);
+    	
         // clear executed scripts, also makes sure that the scripts table exists
         executedScriptInfoSource.clearAllExecutedScripts();
 

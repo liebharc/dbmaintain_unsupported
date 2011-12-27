@@ -64,8 +64,6 @@ public class DefaultDBCleaner implements DBCleaner {
         this.databases = databases;
         this.sqlHandler = sqlHandler;
         this.itemsToPreserve = itemsToPreserve;
-
-        assertItemsToPreserveExist(itemsToPreserve);
     }
 
 
@@ -74,6 +72,8 @@ public class DefaultDBCleaner implements DBCleaner {
      * configured as <i>tablesToPreserve</i> , and the table in which the database version is stored
      */
     public void cleanDatabase() {
+    	assertItemsToPreserveExist(itemsToPreserve);
+    	
         for (Database database : databases.getDatabases()) {
             for (String schemaName : database.getSchemaNames()) {
                 // check whether schema needs to be preserved
