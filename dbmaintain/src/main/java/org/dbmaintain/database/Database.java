@@ -16,7 +16,13 @@
 package org.dbmaintain.database;
 
 import javax.sql.DataSource;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.dbmaintain.structure.model.DbItemType;
 
@@ -115,7 +121,53 @@ abstract public class Database {
      * @return The names of all tables in the database
      */
     public abstract Set<String> getTableNames(String schemaName);
+    
+    /**
+     * Return the names of all tables in the given schema sorted according to the foreign key constraints.
+     * 
+     * For example: If TabA has a Parent TabB and TabA is parent of TabC the returned order would be TabB, TabA, TabC
+     * 
+     * Warning: Cycles like TabA refers to TabB which refers to TabA are not guaranteed to be handled correctly or to be detected
+     * 
+     * @param schemaName The schema, not null
+     * @return The names of all tables in the database - sorted
+     */
+    public List<String> getTableNamesSortedAccordingToConstraints(String schemaName) {
+    	return new ArrayList<String>(getTableNames(schemaName));
+    }
 
+    
+    /**
+     * Sorts the given tables according to parent child relations passed as 2nd parameter.
+     * @param tableNames Tables to be sorted
+     * @param childParentRelations Parent child relations
+     * @return The passed tables sorted
+     */
+    public static List<String> sortAccordingToConstraints(List<String> tableNames, final Map<String, Set<String>> childParentRelations) {
+    	// Using Collections.sort doesn't work since the sort order isn't associative
+    	for (int i = 0; i < tableNames.size(); i++) {
+    		for (int j = i + 1; j < tableNames.size(); j++) {
+        		if (compareTables(tableNames.get(i), tableNames.get(j), childParentRelations) > 0) {
+        			Collections.swap(tableNames, i, j);
+        		}
+        	}	
+    	}
+    	return tableNames;
+    }
+    
+    private static int compareTables(String t1, String t2, Map<String, Set<String>> childParentRelations) {
+		if (childParentRelations.containsKey(t1) 
+				&& childParentRelations.get(t1).contains(t2)) {
+			return 1;
+		}
+		else if (childParentRelations.containsKey(t2) 
+				&& childParentRelations.get(t2).contains(t1)) {
+			return -1;
+		}
+		else {
+			return 0;
+		}
+    }
 
     /**
      * Gets the names of all columns of the given table in the default schema.

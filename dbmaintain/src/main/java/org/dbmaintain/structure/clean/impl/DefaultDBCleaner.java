@@ -24,10 +24,7 @@ import org.dbmaintain.structure.clean.DBCleaner;
 import org.dbmaintain.structure.model.DbItemIdentifier;
 import org.dbmaintain.util.DbMaintainException;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.dbmaintain.structure.model.DbItemIdentifier.getItemIdentifier;
 import static org.dbmaintain.structure.model.DbItemIdentifier.getSchemaIdentifier;
@@ -82,7 +79,7 @@ public class DefaultDBCleaner implements DBCleaner {
                 }
                 logger.info("Cleaning database schema. Deleting all records from tables in schema " + schemaName);
 
-                Set<String> tableNames = database.getTableNames(schemaName);
+                List<String> tableNames = database.getTableNamesSortedAccordingToConstraints(schemaName);
                 for (String tableName : tableNames) {
                     // check whether table needs to be preserved
                     if (itemsToPreserve.contains(getItemIdentifier(TABLE, schemaName, tableName, database))) {

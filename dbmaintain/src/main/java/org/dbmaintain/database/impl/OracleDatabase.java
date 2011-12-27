@@ -21,7 +21,7 @@ import org.dbmaintain.database.DatabaseException;
 import org.dbmaintain.database.IdentifierProcessor;
 
 import java.sql.*;
-import java.util.Set;
+import java.util.*;
 import org.dbmaintain.util.DbMaintainException;
 
 import static org.apache.commons.dbutils.DbUtils.closeQuietly;
@@ -65,6 +65,50 @@ public class OracleDatabase extends Database {
         // all_tables also contains the materialized views: don't return these
         // to be sure no recycled items are handled, all items with a name that starts with BIN$ will be filtered out.
         return getSQLHandler().getItemsAsStringSet("select TABLE_NAME from ALL_TABLES where OWNER = '" + schemaName + "' and TABLE_NAME not like 'BIN$%' minus select MVIEW_NAME from ALL_MVIEWS where OWNER = '" + schemaName + "'", getDataSource());
+    }
+    
+    @Override
+    public List<String> getTableNamesSortedAccordingToConstraints(String schemaName) {
+    	try {
+	    	List<String> tableNames =  new ArrayList<String>(getTableNames(schemaName));
+	    	Map<String, Set<String>> childParentRelations = getTableChildParentRelations(schemaName);
+	    	return sortAccordingToConstraints(tableNames, childParentRelations);
+    	} 
+    	catch (SQLException e) {
+    		throw new DatabaseException("Failed to resolve referential constraints", e);
+    	}
+    }
+       
+    private Map<String, Set<String>> getTableChildParentRelations(String schemaName) throws SQLException {
+    	Map<String, Set<String>> childParentRelations = new HashMap<String, Set<String>>();
+        Connection connection = null;
+        Statement queryStatement = null;
+        Statement alterStatement = null;
+        ResultSet resultSet = null;
+        try {
+	        connection = getDataSource().getConnection();
+	        queryStatement = connection.createStatement();
+	        alterStatement = connection.createStatement();
+	
+	        // cascade or "set null" constraints can be ignored since they are handled correctly by the DBMS independent of the delete order
+	        resultSet = queryStatement.executeQuery("select p.table_name AS parent, c.table_name AS child from ALL_CONSTRAINTS p join ALL_CONSTRAINTS c on p.r_constraint_name = c.constraint_name and p.r_owner = c.owner where p.CONSTRAINT_TYPE = 'R' and c.OWNER = '" + schemaName + "' and p.DELETE_RULE = 'NO ACTION' and p.CONSTRAINT_NAME not like 'BIN$%' and p.STATUS <> 'DISABLED'");
+	        while (resultSet.next()) {
+	        	String child = resultSet.getString("CHILD");
+	            String parent = resultSet.getString("PARENT");
+	            if (childParentRelations.containsKey(child)) {
+	            	Set<String> parents = childParentRelations.get(child);
+	            	parents.add(parent);
+	            } else {
+	            	Set<String> parents = new HashSet<String>();
+	            	parents.add(parent);
+	            	childParentRelations.put(child, parents);
+	            }
+	        }
+	        return childParentRelations;
+        } finally {
+            closeQuietly(queryStatement);
+            closeQuietly(connection, alterStatement, resultSet);
+        }
     }
 
     /**
@@ -302,7 +346,7 @@ public class OracleDatabase extends Database {
             closeQuietly(connection, alterStatement, resultSet);
         }
     }
-
+    
     /**
      * Disables all value constraints (e.g. not null) on all tables in the schema
      *
