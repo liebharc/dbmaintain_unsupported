@@ -22,6 +22,7 @@ import org.dbmaintain.database.IdentifierProcessor;
 
 import java.sql.*;
 import java.util.Set;
+import org.dbmaintain.util.DbMaintainException;
 
 import static org.apache.commons.dbutils.DbUtils.closeQuietly;
 
@@ -35,6 +36,9 @@ public class OracleDatabase extends Database {
 
     /* The major version number of the Oracle database */
     private Integer oracleMajorVersionNumber;
+    
+    /* Public schema */
+    private static final String publicSchema = "PUBLIC";
 
 
     public OracleDatabase(DatabaseConnection databaseConnection, IdentifierProcessor identifierProcessor) {
@@ -103,7 +107,17 @@ public class OracleDatabase extends Database {
     public Set<String> getSynonymNames(String schemaName) {
         return getSQLHandler().getItemsAsStringSet("select SYNONYM_NAME from ALL_SYNONYMS where OWNER = '" + schemaName + "'", getDataSource());
     }
-
+    
+    /**
+    * Retrieves the names of all database links in the database schema.
+    *
+    * @return The names of all database links in the database
+    */
+    @Override
+    public Set<String> getDatabaseLinkNames(String schemaName) {
+    	return getSQLHandler().getItemsAsStringSet("select DB_LINK from ALL_DB_LINKS where OWNER = '" + schemaName + "'", getDataSource());
+    }
+    
     /**
      * Retrieves the names of all sequences in the database schema.
      *
@@ -134,7 +148,38 @@ public class OracleDatabase extends Database {
     public Set<String> getTypeNames(String schemaName) {
         return getSQLHandler().getItemsAsStringSet("select TYPE_NAME from ALL_TYPES where OWNER = '" + schemaName + "'", getDataSource());
     }
-
+    /**
+    * Retrieves the names of all functions in the given schema.
+    *
+    * @param schemaName The schema, not null
+    * @return The names of all function in the database, not null
+    */
+    @Override
+    public Set<String> getFunctionNames(String schemaName) {
+    	return getSQLHandler().getItemsAsStringSet("select distinct OBJECT_NAME from ALL_PROCEDURES where OWNER = '" + schemaName + "' and OBJECT_TYPE = 'FUNCTION'", getDataSource());
+    }
+        
+    /**
+    * Retrieves the names of all packages in the given schema.
+    *
+    * @param schemaName The schema, not null
+    * @return The names of all packages in the database, not null
+    */
+    @Override
+    public Set<String> getPackageNames(String schemaName) {
+    	return getSQLHandler().getItemsAsStringSet("select distinct OBJECT_NAME from ALL_PROCEDURES where OWNER = '" + schemaName + "' and OBJECT_TYPE = 'PACKAGE'", getDataSource());
+    }
+        
+    /**
+    * Retrieves the names of all stored procedures in the given schema.
+    *
+    * @param schemaName The schema, not null
+    * @return The names of all stored procedures in the database, not null
+    */
+    @Override
+    public Set<String> getStoredProcedureNames(String schemaName) {
+    	return getSQLHandler().getItemsAsStringSet("select distinct OBJECT_NAME from ALL_PROCEDURES where OWNER = '" + schemaName + "' and OBJECT_TYPE = 'PROCEDURE'", getDataSource());
+	}  
 
     /**
      * Removes the table with the given name from the database.
@@ -168,7 +213,51 @@ public class OracleDatabase extends Database {
     public void dropMaterializedView(String schemaName, String materializedViewName) {
         getSQLHandler().execute("drop materialized view " + qualified(schemaName, materializedViewName), getDataSource());
     }
-
+    
+    /**
+    * Removes the database link with the given name from the given schema
+    * Note: the database link name is surrounded with quotes, making it case-sensitive.
+    *
+    * @param schemaName  The schema, not null
+    * @param databaseLinkName The database link to drop (case-sensitive), not null
+    */
+    @Override
+    public void dropDatabaseLink(String schemaName, String databaseLinkName) {
+    	if (schemaName.equals(getDefaultSchemaName())) {
+    		getSQLHandler().execute("drop database link " + quoted(databaseLinkName), getDataSource());
+    	} 
+    	else if (publicSchema.equals(schemaName)) {
+    			dropPublicDatabaseLink(databaseLinkName);
+    	}
+    	else {
+    			throw new DbMaintainException("Oracle doesn't allow to drop a database link in another user's schema.");
+    	}
+    }
+    
+    protected void dropPublicDatabaseLink(String databaseLinkName) {
+    	getSQLHandler().execute("drop public database link " + quoted(databaseLinkName), getDataSource());
+    }
+    
+    /**
+    * Removes the synonym with the given name from the given schema
+    * Note: the synonym name is surrounded with quotes, making it case-sensitive.
+    *
+    * @param schemaName  The schema, not null
+    * @param synonymName The synonym to drop (case-sensitive), not null
+    */
+    @Override    
+    public void dropSynonym(String schemaName, String synonymName) {
+    	if (publicSchema.equals(schemaName)) {
+    		dropPublicSynonym(synonymName);
+    	} else {
+    		super.dropSynonym(schemaName, synonymName);
+    	}
+    }
+    
+    protected void dropPublicSynonym(String synonymName) {
+    	getSQLHandler().execute("drop public synonym " + quoted(synonymName), getDataSource());
+    }
+    
     /**
      * Drops the type with the given name from the database
      * Note: the type name is surrounded with quotes, making it case-sensitive.
@@ -345,6 +434,16 @@ public class OracleDatabase extends Database {
     public boolean supportsSequences() {
         return true;
     }
+        
+    /**
+    * Database links are supported.
+    *
+    * @return True
+    */
+    @Override
+    public boolean supportsDatabaseLinks() {
+    	return true;
+    }    
 
     /**
      * Triggers are supported.
@@ -385,6 +484,36 @@ public class OracleDatabase extends Database {
     public boolean supportsCascade() {
         return true;
     }
+    
+    /**
+    * Functions are supported.
+    *
+    * @return True
+    */
+    @Override
+    public boolean supportsFunctions() {
+    	return true;
+    }
+        
+    /**
+    * Procedures are supported.
+    *
+    * @return True
+    */
+    @Override
+    public boolean supportsStoredProcedures() {
+    	return true;
+    }
+        
+    /**
+    * Packages are supported.
+    *
+    * @return True
+    */
+    @Override
+    public boolean supportsPackages() {
+    	return true;
+    }    
 
     /**
      * Setting the default schema is supported.

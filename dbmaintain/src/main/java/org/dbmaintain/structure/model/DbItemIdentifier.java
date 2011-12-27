@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
 import org.dbmaintain.util.DbMaintainException;
+import org.dbmaintain.util.IdentifierParser;
 
 import static org.dbmaintain.database.StoredIdentifierCase.MIXED_CASE;
 
@@ -115,10 +116,15 @@ public class DbItemIdentifier {
         }
         return true;
     }
-
+    
+    @Override
+    public String toString() {
+    	return schemaName+"."+itemName;
+    }    
 
     public static DbItemIdentifier parseItemIdentifier(DbItemType type, String identifierAsString, Databases databases) {
-        String[] identifierParts = StringUtils.split(identifierAsString, '.');
+    	IdentifierParser parser = new IdentifierParser('.');
+    	String[] identifierParts = parser.parse(identifierAsString);
         String schemaName, itemName;
         Database database;
         if (identifierParts.length == 3) {

@@ -129,6 +129,11 @@ public class DbMaintainProperties {
      * The key of the property that specifies which tables should not be dropped
      */
     public static final String PROPERTY_PRESERVE_TABLES = "dbMaintainer.preserve.tables";
+    
+    /**
+     * The key of the property that specifies which database links should not be dropped
+     */
+    public static final String PROPERTY_PRESERVE_DATABASE_LINKS = "dbMaintainer.preserve.databaseLinks";    
 
     /**
      * The key of the property that specifies which views should not be dropped
@@ -140,6 +145,21 @@ public class DbMaintainProperties {
      */
     public static final String PROPERTY_PRESERVE_MATERIALIZED_VIEWS = "dbMaintainer.preserve.materializedViews";
 
+    /**
+     * The key of the property that specifies which functions should not be dropped
+     */
+    public static final String PROPERTY_PRESERVE_FUNCTIONS = "dbMaintainer.preserve.functions";
+
+    /**
+     * The key of the property that specifies which packages should not be dropped
+     */
+    public static final String PROPERTY_PRESERVE_PACKAGES = "dbMaintainer.preserve.packages";
+    
+    /**
+     * The key of the property that specifies which procedures should not be dropped
+     */
+    public static final String PROPERTY_PRESERVE_PROCEDURES = "dbMaintainer.preserve.procedures";    
+    
     /**
      * The key of the property that specifies which synonyms should not be dropped
      */
@@ -169,6 +189,62 @@ public class DbMaintainProperties {
      * Property key for the tables that should not be cleaned
      */
     public static final String PROPERTY_PRESERVE_DATA_TABLES = "dbMaintainer.preserveDataOnly.tables";
+    
+    /**
+    * Property key for the tables that should be dropped in addition
+    */
+    public static final String PROPERTY_PURGE_TABLES = "dbMaintainer.purge.tables";
+        
+    /**
+    * Property key for the database links that should be dropped in addition
+    */
+    public static final String PROPERTY_PURGE_DATABASE_LINKS = "dbMaintainer.purge.databaseLinks";
+        
+    /**
+    * Property key for the views that should be dropped in addition
+    */
+    public static final String PROPERTY_PURGE_VIEWS = "dbMaintainer.purge.views";
+        
+    /**
+    * Property key for the materialized views that should be dropped in addition
+    */
+    public static final String PROPERTY_PURGE_MATERIALIZED_VIEWS = "dbMaintainer.purge.materializedViews";
+        
+    /**
+    * The key of the property that specifies which functions should not be dropped
+    */
+    public static final String PROPERTY_PURGE_FUNCTIONS = "dbMaintainer.purge.functions";
+        
+    /**
+    * The key of the property that specifies which packages should not be dropped
+    */
+    public static final String PROPERTY_PURGE_PACKAGES = "dbMaintainer.purge.packages";
+    
+    /**
+    * The key of the property that specifies which procedures should not be dropped
+    */
+    public static final String PROPERTY_PURGE_PROCEDURES = "dbMaintainer.purge.procedures";
+    
+    
+    /**
+    * Property key for the synonyms that should be dropped in addition
+    */
+    public static final String PROPERTY_PURGE_SYNONYMS = "dbMaintainer.purge.synonyms";
+    
+    /**
+    * Property key for the sequences that should be dropped in addition
+    */
+    public static final String PROPERTY_PURGE_SEQUENCES = "dbMaintainer.purge.sequences";
+    
+    /**
+    * The key of the property that specifies which triggers should not be dropped
+    */
+    public static final String PROPERTY_PURGE_TRIGGERS = "dbMaintainer.purge.triggers";
+    
+    /**
+    * The key of the property that specifies which types should not be dropped
+    */
+    public static final String PROPERTY_PURGE_TYPES = "dbMaintainer.purge.types";    
 
     /* The key of the property that specifies the database table in which the DB version is stored */
     public static final String PROPERTY_EXECUTED_SCRIPTS_TABLE_NAME = "dbMaintainer.executedScriptsTableName";
