@@ -240,6 +240,10 @@ public class DbMaintainProperties {
     public static final String PROPERTY_INCLUDED_QUALIFIERS = "dbMaintainer.includedQualifiers";
 
     public static final String PROPERTY_SQL_PLUS_COMMAND = "dbMaintainer.sqlPlusScriptRunner.sqlPlusCommand";
+        
+    public static final String PROPERTY_SQL_LOADER_COMMAND = "dbMaintainer.sqlLoaderRunner.sqlLoaderCommand";
+        
+    public static final String PROPERTY_CHMOD_COMMAND = "dbMaintainer.shellScriptRunner.chmodCommand";
 
     public static final String PROPERTY_DB2_COMMAND = "dbMaintainer.db2ScriptRunner.db2Command";
 
