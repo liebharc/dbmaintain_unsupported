@@ -55,7 +55,7 @@ public class SqlLoaderScriptRunner extends BaseNativeScriptRunner {
             tmpLog = File.createTempFile("sqlLdr",".log");
             tmpBad = File.createTempFile("sqlLdr",".bad");
             tmpDiscard = File.createTempFile("sqlLdr",".discard");
-            String[] arguments = {databaseInfo.getUserName()+"/"+databaseInfo.getPassword(), 
+            String[] arguments = {databaseInfo.getUserName()+"/"+databaseInfo.getPassword()+"@"+getDatabaseConfigFromJdbcUrl(databaseInfo.getUrl()), 
                                   scriptFile.getAbsolutePath(),
                                   "errors=0",
                                   "discardmax=0",
@@ -65,7 +65,7 @@ public class SqlLoaderScriptRunner extends BaseNativeScriptRunner {
             Application.ProcessOutput processOutput = application.execute(arguments);
             int exitValue = processOutput.getExitValue();
             if (exitValue != 0) {
-                throw new DbMaintainException("Failed to execute command. SQL*Loader returned an error.\n" + 
+                throw new DbMaintainException("Failed to execute command. SQL*Loader returned an error.\n" + arguments[0] + "\n" + 
                                                processOutput.getOutput()+"\n\n" +
                                                "Log file:\n" + 
                                                getFileContent(tmpLog) +
@@ -108,10 +108,7 @@ public class SqlLoaderScriptRunner extends BaseNativeScriptRunner {
     }
     
     protected String getDatabaseConfigFromJdbcUrl(String url) {
-        int index = url.indexOf('@');
-        if (index == -1) {
-            return url;
-        }
-        return url.substring(index + 1);
+        String[] parts = url.split(":");
+        return parts[parts.length - 1];
     }
 }
