@@ -14,18 +14,18 @@ import org.dbmaintain.structure.model.DbItemType;
 import org.dbmaintain.util.DbMaintainException;
 
 public class StructureUtils {
-	
+
 	/**
 	 * Raises an exception if at least one of the DB items in itemsToPreserve does not exist in any of the databases.
-	 * 
+	 *
 	 *  In case of success the method returns without exception.
-	 *  
+	 *
 	 * @param databases databases which should contain the itemsToPreserve
 	 * @param itemsToPreserve items which must exist otherwise a runtime exception is raised
 	 */
-	public static void assertItemsToPreserveExist(Databases databases, Set<DbItemIdentifier> itemsToPreserve) {        
+	public static void assertItemsToPreserveExist(Databases databases, Set<DbItemIdentifier> itemsToPreserve) {
         Set<DbItemIdentifier> unknownItems = filterDbMaintainIdentifiers(itemsToPreserve);
-        
+
         for (Database database : databases.getDatabases()) {
             unknownItems = filterItemsFoundInDb(unknownItems, database);
 
@@ -56,7 +56,7 @@ public class StructureUtils {
 		}
 		return filtered;
 	}
-	
+
 	private static Set<DbItemType> extractTypes(Set<DbItemIdentifier> items) {
 		Set<DbItemType> types = new HashSet<DbItemType>();
 		for (DbItemIdentifier item : items) {
@@ -74,7 +74,7 @@ public class StructureUtils {
         }
 		return filtered;
 	}
-	
+
 	private static Set<DbItemIdentifier> filterSchema(Set<DbItemIdentifier> items,
 			Database database, String schemaName) {
 		Set<DbItemIdentifier> filtered = new HashSet<DbItemIdentifier>();
@@ -82,8 +82,8 @@ public class StructureUtils {
 		DbItemIdentifier schema = getItemIdentifier(SCHEMA, schemaName, null, database);
 		filtered.remove(schema);
 		return filtered;
-	}	
-	
+	}
+
 	private static Set<DbItemIdentifier> removeDbItemOfGivenTypeInSchema(DbItemType type, Set<DbItemIdentifier> items,
 			Database database, String schemaName) {
 		Set<DbItemIdentifier> filtered = new HashSet<DbItemIdentifier>();
@@ -94,8 +94,8 @@ public class StructureUtils {
 		Set<DbItemIdentifier> itemNames = toDbItemIdentifiers(type, database, schemaName, database.getDbItemsOfType(type, schemaName));
 		filtered.removeAll(itemNames);
 		return filtered;
-	}	
-	
+	}
+
 	private static Set<DbItemIdentifier> extractSchemas(
 			Set<DbItemIdentifier> items) {
 		Set<DbItemIdentifier> schemas = new HashSet<DbItemIdentifier>();
@@ -105,7 +105,7 @@ public class StructureUtils {
 		}
 		return schemas;
 	}
-	
+
 	private static Set<String> mapSchemaItemsToSchemaNames(
 			Set<DbItemIdentifier> schemas) {
 		Set<String> schemaNames = new HashSet<String>();
@@ -113,8 +113,8 @@ public class StructureUtils {
 			schemaNames.add(schema.getSchemaName());
 		}
 		return schemaNames;
-	}	
-	
+	}
+
 	private static String buildErrorMessage(Set<DbItemIdentifier> unknownItems,
 			Set<String> unknownSchemaNames) {
 		String error = "";
@@ -122,15 +122,15 @@ public class StructureUtils {
 			error += "Schemas to preserve do not exist: " + StringUtils.join(unknownSchemaNames, ", ") + "\n";
 		if (unknownItems.size() > 0)
 			error += "Tables to preserve do not exist: " + StringUtils.join(unknownItems, ", ") + "\n";
-		error += "DbMaintain cannot determine which schema's need to be preserved. To assure nothing is deleted by mistake, nothing will be deleted.";
+		error += "DbMaintain cannot determine which database objects need to be preserved. To assure nothing is deleted by mistake, nothing will be deleted.";
 		return error;
-	}	
-	
+	}
+
     private static Set<DbItemIdentifier> toDbItemIdentifiers(DbItemType type, Database database, String schemaName, Set<String> itemNames) {
         Set<DbItemIdentifier> result = new HashSet<DbItemIdentifier>();
         for (String itemName : itemNames) {
             result.add(getItemIdentifier(type, schemaName, itemName, database));
         }
         return result;
-    }	
+    }
 }
