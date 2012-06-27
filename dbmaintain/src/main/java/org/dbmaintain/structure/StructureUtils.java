@@ -2,7 +2,6 @@ package org.dbmaintain.structure;
 
 import static org.dbmaintain.structure.model.DbItemIdentifier.getItemIdentifier;
 import static org.dbmaintain.structure.model.DbItemType.SCHEMA;
-import static org.dbmaintain.structure.model.DbItemType.TABLE;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,21 +25,9 @@ public class StructureUtils {
 	 */
 	public static void assertItemsToPreserveExist(Databases databases, Set<DbItemIdentifier> itemsToPreserve) {        
         Set<DbItemIdentifier> unknownItems = filterDbMaintainIdentifiers(itemsToPreserve);
+        
         for (Database database : databases.getDatabases()) {
-            if (database == null) {
-                // the database is disabled, skip
-                continue;
-            }
-            
-            for (String schemaName : database.getSchemaNames()) {
-            	unknownItems = filterSchema(unknownItems, database, schemaName);
-            	for (DbItemType type : DbItemType.values()) {
-            		if (type == SCHEMA) {
-            			continue;
-            		}
-            		unknownItems = removeDbItemOfGivenTypeInSchema(type, unknownItems, database, schemaName);
-            	}
-            }
+            unknownItems = filterItemsFoundInDb(unknownItems, database);
 
         }
         if (unknownItems.size() > 0) {
@@ -51,6 +38,32 @@ public class StructureUtils {
         	throw new DbMaintainException(error);
         }
     }
+
+	private static Set<DbItemIdentifier> filterItemsFoundInDb(
+			Set<DbItemIdentifier> unknownItems, Database database) {
+		if (database == null) {
+		    return unknownItems;
+		}
+		Set<DbItemIdentifier> filtered = new HashSet<DbItemIdentifier>();
+		filtered.addAll(unknownItems);
+		for (String schemaName : database.getSchemaNames()) {
+			for (DbItemType type : extractTypes(filtered)) {
+				if (type == SCHEMA)
+					filtered = filterSchema(filtered, database, schemaName);
+				else
+					filtered = removeDbItemOfGivenTypeInSchema(type, filtered, database, schemaName);
+			}
+		}
+		return filtered;
+	}
+	
+	private static Set<DbItemType> extractTypes(Set<DbItemIdentifier> items) {
+		Set<DbItemType> types = new HashSet<DbItemType>();
+		for (DbItemIdentifier item : items) {
+			types.add(item.getType());
+		}
+		return types;
+	}
 
 	private static Set<DbItemIdentifier> filterDbMaintainIdentifiers(
 			Set<DbItemIdentifier> items) {
