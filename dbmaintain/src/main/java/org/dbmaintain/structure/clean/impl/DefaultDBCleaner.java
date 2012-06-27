@@ -15,20 +15,21 @@
  */
 package org.dbmaintain.structure.clean.impl;
 
+import static org.dbmaintain.structure.model.DbItemIdentifier.getItemIdentifier;
+import static org.dbmaintain.structure.model.DbItemIdentifier.getSchemaIdentifier;
+import static org.dbmaintain.structure.model.DbItemType.TABLE;
+
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
 import org.dbmaintain.database.SQLHandler;
+import org.dbmaintain.structure.StructureUtils;
 import org.dbmaintain.structure.clean.DBCleaner;
 import org.dbmaintain.structure.model.DbItemIdentifier;
-import org.dbmaintain.util.DbMaintainException;
-
-import java.util.*;
-
-import static org.dbmaintain.structure.model.DbItemIdentifier.getItemIdentifier;
-import static org.dbmaintain.structure.model.DbItemIdentifier.getSchemaIdentifier;
-import static org.dbmaintain.structure.model.DbItemType.TABLE;
 
 /**
  * Implementation of {@link org.dbmaintain.structure.clean.DBCleaner}. This implementation will delete all data from a database, except for the tables
@@ -69,7 +70,7 @@ public class DefaultDBCleaner implements DBCleaner {
      * configured as <i>tablesToPreserve</i> , and the table in which the database version is stored
      */
     public void cleanDatabase() {
-    	assertItemsToPreserveExist(itemsToPreserve);
+    	StructureUtils.assertItemsToPreserveExist(databases, itemsToPreserve);
     	
         for (Database database : databases.getDatabases()) {
             for (String schemaName : database.getSchemaNames()) {
@@ -104,44 +105,5 @@ public class DefaultDBCleaner implements DBCleaner {
     protected void cleanTable(Database database, String schemaName, String tableName) {
         logger.debug("Deleting all records from table " + tableName + " in database schema " + schemaName);
         sqlHandler.execute("delete from " + database.qualified(schemaName, tableName), database.getDataSource());
-    }
-
-    protected void assertItemsToPreserveExist(Set<DbItemIdentifier> itemsToPreserve) {
-        Map<DbItemIdentifier, Set<DbItemIdentifier>> schemaTableNames = new HashMap<DbItemIdentifier, Set<DbItemIdentifier>>();
-        for (DbItemIdentifier itemToPreserve : this.itemsToPreserve) {
-            Database database = databases.getDatabase(itemToPreserve.getDatabaseName());
-            if (database == null) {
-                // the database is disabled, skip
-                continue;
-            }
-            switch (itemToPreserve.getType()) {
-                case SCHEMA:
-                    if (!database.getSchemaNames().contains(itemToPreserve.getSchemaName())) {
-                        throw new DbMaintainException("Schema to preserve does not exist: " + itemToPreserve.getSchemaName() +
-                                ".\nDbMaintain cannot determine which schema's need to be preserved. To assure nothing is deleted by mistake, nothing will be deleted.");
-                    }
-                    break;
-                case TABLE:
-                    Set<DbItemIdentifier> tableNames = schemaTableNames.get(itemToPreserve.getSchema());
-                    if (tableNames == null) {
-                        tableNames = toDbItemIdentifiers(database, itemToPreserve.getSchemaName(), database.getTableNames(itemToPreserve.getSchemaName()));
-                        schemaTableNames.put(itemToPreserve.getSchema(), tableNames);
-                    }
-                    if (!itemToPreserve.isDbMaintainIdentifier() && !tableNames.contains(itemToPreserve)) {
-                        throw new DbMaintainException("Table to preserve does not exist: " + itemToPreserve.getItemName() + " in schema: " + itemToPreserve.getSchemaName() +
-                                ".\nDbMaintain cannot determine which tables need to be preserved. To assure nothing is deleted by mistake, nothing will be deleted.");
-                    }
-                    break;
-            }
-        }
-    }
-
-
-    protected Set<DbItemIdentifier> toDbItemIdentifiers(Database database, String schemaName, Set<String> itemNames) {
-        Set<DbItemIdentifier> result = new HashSet<DbItemIdentifier>();
-        for (String itemName : itemNames) {
-            result.add(getItemIdentifier(TABLE, schemaName, itemName, database));
-        }
-        return result;
     }
 }

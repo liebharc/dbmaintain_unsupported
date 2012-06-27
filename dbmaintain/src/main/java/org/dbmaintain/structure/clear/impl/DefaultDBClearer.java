@@ -20,11 +20,11 @@ import org.apache.commons.logging.LogFactory;
 import org.dbmaintain.database.Database;
 import org.dbmaintain.database.Databases;
 import org.dbmaintain.script.executedscriptinfo.ExecutedScriptInfoSource;
+import org.dbmaintain.structure.StructureUtils;
 import org.dbmaintain.structure.clear.DBClearer;
 import org.dbmaintain.structure.constraint.ConstraintsDisabler;
 import org.dbmaintain.structure.model.DbItemIdentifier;
 import org.dbmaintain.structure.model.DbItemType;
-import org.dbmaintain.util.DbMaintainException;
 
 import java.util.*;
 
@@ -91,7 +91,7 @@ public class DefaultDBClearer implements DBClearer {
      * untouched.
      */
     public void clearDatabase() {
-    	assertItemsToPreserve(itemsToPreserve);
+    	StructureUtils.assertItemsToPreserveExist(databases, itemsToPreserve);
     	
         // clear executed scripts, also makes sure that the scripts table exists
         executedScriptInfoSource.clearAllExecutedScripts();
@@ -393,73 +393,5 @@ public class DefaultDBClearer implements DBClearer {
                 multiPassErrorHandler.addError(e);
             }
         }
-    }
-
-    protected void assertItemsToPreserve(Set<DbItemIdentifier> itemsToPreserve) {
-    	Map<DbItemType, Map<DbItemIdentifier, Set<DbItemIdentifier>>> cache = 
-    	new HashMap<DbItemType, Map<DbItemIdentifier, Set<DbItemIdentifier>>>();
-    	for (DbItemType type : DbItemType.values()) {
-    		cache.put(type, new HashMap<DbItemIdentifier, Set<DbItemIdentifier>>());
-    	}
-    	
-        for (DbItemIdentifier itemToPreserve : itemsToPreserve) {
-        	if (itemToPreserve.getType() == SCHEMA) {
-        		assertSchemaToPreserve(itemToPreserve);
-        	} else {
-        		assertItemToPreserve(
-        		itemToPreserve,
-        		cache.get(itemToPreserve.getType()));
-        	}
-        }
-    }
-    
-    public void assertItemToPreserve(
-    		DbItemIdentifier itemToPreserve,
-    		Map<DbItemIdentifier, Set<DbItemIdentifier>> schemaItems) {
-    		Database database = databases.getDatabase(itemToPreserve.getDatabaseName());
-    		
-    		if (!database.supports(itemToPreserve.getType()))
-    		            return;
-    		        
-    		        Set<DbItemIdentifier> itemNames;
-    		        if (schemaItems.containsKey(itemToPreserve.getSchema())) {
-    		            itemNames = schemaItems.get(itemToPreserve.getSchema());
-    		        }
-    		        else {
-    		            itemNames = toDbItemIdentifiers(
-    		                    itemToPreserve.getType(),
-    		                    database, 
-    		                    itemToPreserve.getSchemaName(),
-    		                    database.getDbItemsOfType(
-    		                        itemToPreserve.getType(),
-    		                        itemToPreserve.getSchemaName()
-    		                    )
-    		            );
-    		            schemaItems.put(itemToPreserve.getSchema(), itemNames);
-    		        }
-    		
-    		        if (!itemToPreserve.isDbMaintainIdentifier() && 
-    		                !itemNames.contains(itemToPreserve)) {
-    		            throw new DbMaintainException(itemToPreserve.getType() + " to preserve does not exist: " + itemToPreserve.getItemName() + " in schema: " + itemToPreserve.getSchemaName() +
-    		                    ".\nDbMaintain cannot determine which items need to be preserved. To assure nothing is dropped by mistake, nothing will be dropped.");
-    		        }        
-    		    }
-    		    
-    		    public void assertSchemaToPreserve(DbItemIdentifier schemaToPreserve) {
-    		        Database database = databases.getDatabase(schemaToPreserve.getDatabaseName());
-    		       
-    		        if (!schemaToPreserve.isDbMaintainIdentifier() && 
-    		                !database.getSchemaNames().contains(schemaToPreserve.getSchemaName())) {
-    		            throw new DbMaintainException(schemaToPreserve.getType() + " to preserve does not exist: " + schemaToPreserve.getItemName() + " in schema: " + schemaToPreserve.getSchemaName() +
-    		                    ".\nDbMaintain cannot determine which items need to be preserved. To assure nothing is dropped by mistake, nothing will be dropped.");
-    		        }        
-    		    }
-
-    protected Set<DbItemIdentifier> toDbItemIdentifiers(DbItemType type, Database database, String schemaName, Set<String> itemNames) {
-        Set<DbItemIdentifier> result = new HashSet<DbItemIdentifier>();
-        for (String itemName : itemNames) {
-            result.add(getItemIdentifier(type, schemaName, itemName, database));
-        }
-        return result;
     }
 }
