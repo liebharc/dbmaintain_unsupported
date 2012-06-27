@@ -74,7 +74,6 @@ public class DbItemIdentifier {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((databaseName == null) ? 0 : databaseName.hashCode());
         result = prime * result + ((itemName == null) ? 0 : itemName.hashCode());
         result = prime * result + ((schemaName == null) ? 0 : schemaName.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
@@ -93,13 +92,6 @@ public class DbItemIdentifier {
             return false;
         }
         DbItemIdentifier other = (DbItemIdentifier) obj;
-        if (databaseName == null) {
-            if (other.databaseName != null) {
-                return false;
-            }
-        } else if (!databaseName.equals(other.databaseName)) {
-            return false;
-        }
         if (itemName == null) {
             if (other.itemName != null) {
                 return false;
