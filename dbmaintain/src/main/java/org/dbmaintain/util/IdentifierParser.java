@@ -37,7 +37,6 @@ public class IdentifierParser {
         public void process(char c);
     }
     private class NormalState implements ParsingState {
-        @Override
         public void process(char c) {
             if (c == '\'') {
                 part += c;
@@ -57,7 +56,6 @@ public class IdentifierParser {
         }
     }
     private class DoubleQuotedState implements ParsingState {
-        @Override
         public void process(char c) {
             part += c;
             if (c == '"') {
@@ -66,7 +64,6 @@ public class IdentifierParser {
         }
     }
     private class SingleQuotedState implements ParsingState {
-        @Override
         public void process(char c) {
             part += c;
             if (c == '\'') {

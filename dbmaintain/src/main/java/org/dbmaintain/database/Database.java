@@ -15,18 +15,18 @@
  */
 package org.dbmaintain.database;
 
-import javax.sql.DataSource;
+import static org.dbmaintain.structure.model.DbItemType.SCHEMA;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.dbmaintain.structure.model.DbItemType;
 
-import static org.dbmaintain.structure.model.DbItemType.*;
+import javax.sql.DataSource;
+
+import org.dbmaintain.structure.model.DbItemType;
 
 /**
  * Helper class that implements a number of common operations on a database schema. Operations that can be implemented

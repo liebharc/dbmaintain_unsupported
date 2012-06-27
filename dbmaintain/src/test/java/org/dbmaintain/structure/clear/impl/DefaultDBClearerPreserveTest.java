@@ -238,7 +238,6 @@ public class DefaultDBClearerPreserveTest {
      * @author Filip Neven
      * @author Tim Ducheyne
      */
-    @SuppressWarnings({"UnusedDeclaration"})
     public static class TestTrigger implements Trigger {
 
         public void fire(int i, String string, String string1, Object[] objects, Object[] objects1) {
