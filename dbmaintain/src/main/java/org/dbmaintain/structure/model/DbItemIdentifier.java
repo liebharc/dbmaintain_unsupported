@@ -30,15 +30,13 @@ import static org.dbmaintain.database.StoredIdentifierCase.MIXED_CASE;
 public class DbItemIdentifier {
 
     private DbItemType type;
-    private String databaseName;
     private String schemaName;
     private String itemName;
     private boolean dbMaintainIdentifier;
 
 
-    private DbItemIdentifier(DbItemType type, String databaseName, String schemaName, String itemName, boolean dbMaintainIdentifier) {
+    private DbItemIdentifier(DbItemType type, String schemaName, String itemName, boolean dbMaintainIdentifier) {
         this.type = type;
-        this.databaseName = databaseName;
         this.schemaName = schemaName;
         this.itemName = itemName;
         this.dbMaintainIdentifier = dbMaintainIdentifier;
@@ -47,10 +45,6 @@ public class DbItemIdentifier {
 
     public DbItemType getType() {
         return type;
-    }
-
-    public String getDatabaseName() {
-        return databaseName;
     }
 
     public String getSchemaName() {
@@ -62,7 +56,7 @@ public class DbItemIdentifier {
     }
 
     public DbItemIdentifier getSchema() {
-        return new DbItemIdentifier(DbItemType.SCHEMA, databaseName, schemaName, null, false);
+        return new DbItemIdentifier(DbItemType.SCHEMA, schemaName, null, false);
     }
 
     public boolean isDbMaintainIdentifier() {
@@ -191,6 +185,6 @@ public class DbItemIdentifier {
         if (itemName != null) {
             correctCaseItemName = database.toCorrectCaseIdentifier(itemName);
         }
-        return new DbItemIdentifier(type, database.getDatabaseName(), correctCaseSchemaName, correctCaseItemName, dbMaintainIdentifier);
+        return new DbItemIdentifier(type, correctCaseSchemaName, correctCaseItemName, dbMaintainIdentifier);
     }
 }
